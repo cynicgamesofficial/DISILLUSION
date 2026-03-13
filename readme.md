@@ -1,8 +1,6 @@
-# Quake II RTX
+# Quake II RTX - DISILLUSION ENGINE 
 
-## Project Discontinued
 
-**This repository is no longer maintained.**
 
 If you're looking for a downloadable installer for Quake II RTX, please visit the [Releases](https://github.com/NVIDIA/Q2RTX/releases) page.
 
