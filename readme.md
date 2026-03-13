@@ -1,17 +1,6 @@
 # Quake II RTX - DISILLUSION ENGINE 
 
 
-
-If you're looking for a downloadable installer for Quake II RTX, please visit the [Releases](https://github.com/NVIDIA/Q2RTX/releases) page.
-
-If you would like to make some improvements, feel free to fork this repository or look for other community projects based on Quake II RTX.
-
-<br>
-<br>
-<br>
-
-## Original README
-
 **Quake II RTX** is NVIDIA's attempt at implementing a fully functional 
 version of Id Software's 1997 hit game **Quake II** with RTX path-traced 
 global illumination.
