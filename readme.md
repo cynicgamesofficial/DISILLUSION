@@ -1,6 +1,6 @@
 # DISILLUSION ENGINE — Quake II RTX (Cynic Games Fork)
 
-This repository contains the **DISILLUSION ENGINE**, an experimental and advanced rendering fork of NVIDIA’s Quake II RTX, developed by **Cynic Games**, an independent Italian game studio focused on real-time rendering research, graphics engineering, and next-generation engine technologies.
+This repository contains the **DISILLUSION ENGINE**, an experimental fork of NVIDIA’s Quake II RTX, developed by **Cynic Games**, an independent Italian game studio focused on real-time rendering research, graphics engineering, and next-generation engine technologies.
 
 Recent development efforts in this fork include the integration of modern NVIDIA real-time technologies such as:
 
