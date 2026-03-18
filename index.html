@@ -1,0 +1,1447 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cynic Games — Precision Audio Systems</title>
+    <link rel="icon" type="image/svg+xml" href="webicon.svg">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<link rel="mask-icon" href="safari-pinned-tab.svg" color="#111111">
+    <meta name="description" content="Professional audio software by Cynic Games. Makers of Flux Garden — an advanced polyphonic synthesizer for sound designers.">
+    <link href="https://fonts.googleapis.com/css2?family=Michroma&family=Rajdhani:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <style id="page-styles">
+        :root {
+            --primary: #00ffcc;
+            --primary-dim: #00cc9d;
+            --bg: #000000;
+            --surface: #0a0a0a;
+            --surface-elevated: #141414;
+            --text: #e0e0e0;
+            --text-dim: #808080;
+            --accent: #ff0080;
+            --border: #222222;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        html { scroll-behavior: smooth; }
+
+        body {
+            font-family: 'Rajdhani', sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            overflow-x: hidden;
+            line-height: 1.6;
+        }
+
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            background: repeating-linear-gradient(
+                0deg,
+                rgba(0,255,204,0.018) 0px, transparent 1px,
+                transparent 2px, rgba(0,255,204,0.018) 3px
+            );
+            pointer-events: none;
+            z-index: 9999;
+            animation: scan 10s linear infinite;
+        }
+        @keyframes scan {
+            0% { transform: translateY(0); }
+            100% { transform: translateY(10px); }
+        }
+
+        header {
+            position: fixed;
+            top: 0; left: 0; width: 100%;
+            padding: 1.2rem 3rem;
+            background: rgba(0,0,0,0.85);
+            backdrop-filter: blur(20px); /* desktop override below: 12px */
+            border-bottom: 1px solid rgba(0,255,204,0.08);
+            z-index: 1000;
+            animation: slideDown 0.6s ease-out;
+        }
+        @keyframes slideDown {
+            from { transform: translateY(-100%); opacity: 0; }
+            to   { transform: translateY(0); opacity: 1; }
+        }
+        .header-content {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            max-width: 1440px;
+            margin: 0 auto;
+        }
+        .logo { display: flex; align-items: center; gap: 0.8rem; text-decoration: none; }
+        .logo-img {
+            height: 42px; width: 42px; object-fit: contain;
+            transition: transform 0.3s, filter 0.3s;
+            filter: drop-shadow(0 0 8px rgba(0,255,204,0.4));
+        }
+        .logo:hover .logo-img {
+            transform: scale(1.08) rotate(10deg);
+            filter: drop-shadow(0 0 16px rgba(0,255,204,0.7));
+        }
+        .logo picture { display: contents; }
+        .logo-text {
+            font-family: 'Michroma', sans-serif;
+            font-size: 1.3rem; letter-spacing: 0.2em;
+            color: var(--primary);
+            text-shadow: 0 0 20px rgba(0,255,204,0.4);
+            white-space: nowrap;
+        }
+        nav { display: flex; gap: 2.5rem; align-items: center; }
+        nav a {
+            color: var(--text-dim); text-decoration: none;
+            font-weight: 600; font-size: 0.85rem;
+            letter-spacing: 0.12em; text-transform: uppercase;
+            transition: color 0.3s; position: relative;
+        }
+        nav a::after {
+            content: ''; position: absolute; bottom: -4px; left: 0;
+            width: 0; height: 1px; background: var(--primary); transition: width 0.3s;
+        }
+        nav a:hover, nav a.active { color: var(--primary); }
+        nav a:hover::after, nav a.active::after { width: 100%; }
+        nav .nav-cta {
+            padding: 0.55rem 1.4rem; border: 1px solid var(--primary);
+            color: var(--primary); font-size: 0.8rem; letter-spacing: 0.1em;
+            transition: all 0.3s; text-decoration: none; font-weight: 700;
+        }
+        nav .nav-cta:hover { background: var(--primary); color: #000; }
+        nav .nav-cta::after { display: none; }
+
+        .hero {
+            width: 100%;
+            height: 100vh;
+            height: 100svh;
+            min-height: 600px;
+            position: relative;
+            overflow: hidden;
+            display: flex;
+            align-items: flex-end;
+            justify-content: center;
+        }
+
+        #three-canvas {
+            position: absolute;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            z-index: 0;
+            display: block;
+            background: #000;
+        }
+
+        /* Vignette — top and bottom fade only, scene fills full width */
+        .hero::after {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background:
+                linear-gradient(to bottom, rgba(0,0,0,0.55) 0%, transparent 22%),
+                linear-gradient(to top, rgba(0,0,0,0.88) 0%, rgba(0,0,0,0.22) 42%, transparent 68%);
+            z-index: 1;
+            pointer-events: none;
+        }
+
+        .hero-content {
+            position: relative;
+            z-index: 2;
+            width: 100%;
+            max-width: 1440px;
+            text-align: left;
+            padding: 0 3rem 5.5rem;
+            display: flex;
+            flex-direction: column;
+            align-items: flex-start;
+        }
+
+        /* Horizontal rule accent line */
+        .hero-rule {
+            width: 48px; height: 1px;
+            background: var(--primary);
+            box-shadow: 0 0 12px rgba(0,255,204,0.7);
+            margin-bottom: 1.5rem;
+            opacity: 0; animation: expandLine 0.7s ease-out 0.1s forwards;
+        }
+        @keyframes expandLine {
+            from { opacity: 0; width: 0; }
+            to   { opacity: 1; width: 48px; }
+        }
+
+        .hero-eyebrow {
+            font-family: 'Michroma', sans-serif;
+            font-size: 0.7rem; letter-spacing: 0.4em;
+            color: var(--primary); text-transform: uppercase;
+            margin-bottom: 1.2rem;
+            opacity: 0; animation: fadeInUp 0.7s ease-out 0.25s forwards;
+            display: none;
+        }
+
+        .hero h1 {
+            font-family: 'Michroma', sans-serif;
+            font-size: clamp(2.6rem, 5.5vw, 5.2rem);
+            line-height: 1.08; margin: 0 0 0.25rem;
+            letter-spacing: 0.03em; color: var(--text);
+            opacity: 0; animation: fadeInUp 0.7s ease-out 0.4s forwards;
+        }
+        /* Word that glows in primary colour */
+        .hero h1 .word-accent {
+            color: var(--primary);
+            text-shadow: 0 0 60px rgba(0,255,204,0.55), 0 0 120px rgba(0,255,204,0.2);
+        }
+        /* Second line — dimmer */
+        .hero h1 .word-dim {
+            color: #cccccc;
+        }
+
+        .hero-subtitle {
+            font-size: clamp(0.8rem, 1.3vw, 1rem);
+            font-weight: 400; letter-spacing: 0.22em;
+            color: var(--text-dim);
+            margin: 1.6rem 0 2.8rem;
+            text-transform: uppercase;
+            border-left: 2px solid rgba(0,255,204,0.35);
+            padding-left: 1rem;
+            opacity: 0; animation: fadeInUp 0.7s ease-out 0.6s forwards;
+        }
+
+        .hero-actions {
+            display: flex; gap: 1rem;
+            align-items: center; flex-wrap: wrap;
+            opacity: 0; animation: fadeInUp 0.7s ease-out 0.9s forwards;
+        }
+
+        @keyframes fadeInUp {
+            from { opacity: 0; transform: translateY(22px); }
+            to   { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Primary CTA — solid fill with clipped-corner geometry */
+        .btn-primary {
+            position: relative;
+            padding: 0.9rem 2.2rem;
+            background: var(--primary); color: #000;
+            text-decoration: none; font-family: 'Michroma', sans-serif;
+            font-size: 0.75rem; letter-spacing: 0.18em; text-transform: uppercase;
+            font-weight: 700; transition: background 0.3s, color 0.3s, box-shadow 0.3s;
+            border: none; display: inline-block;
+            clip-path: polygon(0 0, calc(100% - 10px) 0, 100% 10px, 100% 100%, 10px 100%, 0 calc(100% - 10px));
+        }
+        .btn-primary:hover {
+            background: #000;
+            color: var(--primary);
+            box-shadow: 0 0 0 1px var(--primary), 0 0 40px rgba(0,255,204,0.25);
+        }
+
+        /* Ghost CTA */
+        .btn-secondary {
+            padding: 0.85rem 2rem; background: transparent; color: var(--text-dim);
+            text-decoration: none; font-family: 'Michroma', sans-serif;
+            font-size: 0.75rem; letter-spacing: 0.18em; text-transform: uppercase;
+            border: 1px solid rgba(255,255,255,0.18); transition: all 0.3s; display: inline-block;
+        }
+        .btn-secondary:hover { border-color: var(--primary); color: var(--primary); background: rgba(0,255,204,0.04); }
+
+        /* content-visibility skips layout/paint for off-screen sections until scrolled into view */
+        .featured-product { padding: 8rem 3rem; max-width: 1440px; margin: 0 auto; content-visibility: auto; contain-intrinsic-size: 0 640px; }
+        .section-label {
+            font-family: 'Michroma', sans-serif; font-size: 0.7rem;
+            letter-spacing: 0.4em; text-transform: uppercase;
+            color: var(--accent); margin-bottom: 1rem;
+        }
+        .product-showcase { display: grid; grid-template-columns: 1fr 1fr; gap: 5rem; align-items: center; }
+        .product-name {
+            font-family: 'Michroma', sans-serif;
+            font-size: clamp(2.5rem, 5vw, 4rem);
+            line-height: 1; letter-spacing: 0.05em;
+            color: var(--primary); text-shadow: 0 0 50px rgba(0,255,204,0.3); margin-bottom: 0.5rem;
+        }
+        .product-type { font-size: 1rem; letter-spacing: 0.15em; text-transform: uppercase; color: var(--text-dim); }
+        .product-desc { font-size: 1.1rem; color: var(--text-dim); line-height: 1.9; margin: 1.5rem 0 2.5rem; max-width: 520px; }
+        .product-features-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 3rem; }
+        .product-feature {
+            display: flex; align-items: flex-start; gap: 0.75rem;
+            padding: 1rem; background: var(--surface); border: 1px solid var(--border);
+            transition: border-color 0.3s;
+        }
+        .product-feature:hover { border-color: rgba(0,255,204,0.3); }
+        .feature-icon { color: var(--primary); font-size: 1.1rem; margin-top: 2px; flex-shrink: 0; }
+        .feature-text { font-size: 0.9rem; color: var(--text-dim); }
+        .feature-text strong {
+            display: block; color: var(--text); font-weight: 600;
+            margin-bottom: 0.15rem; font-size: 0.85rem;
+            letter-spacing: 0.05em; text-transform: uppercase;
+        }
+        .product-actions { display: flex; gap: 1rem; flex-wrap: wrap; }
+        .product-visual { position: relative; }
+        .synth-display {
+            background: var(--surface); border: 1px solid var(--border);
+            padding: 3rem; position: relative; overflow: hidden;
+            aspect-ratio: 4/3; display: flex; align-items: center; justify-content: center;
+        }
+        .synth-display::before {
+            content: ''; position: absolute; top: 0; left: 0; right: 0; height: 2px;
+            background: linear-gradient(90deg, transparent, var(--primary), transparent);
+        }
+        .synth-display::after {
+            content: ''; position: absolute; bottom: 0; left: 0; right: 0; height: 1px;
+            background: linear-gradient(90deg, transparent, rgba(255,0,128,0.5), transparent);
+        }
+        .synth-placeholder { text-align: center; }
+        .synth-placeholder-title { font-family: 'Michroma', sans-serif; font-size: 1.5rem; letter-spacing: 0.15em; color: var(--primary); opacity: 0.4; margin-bottom: 0.5rem; }
+        .synth-placeholder-sub { font-size: 0.8rem; letter-spacing: 0.1em; color: var(--text-dim); opacity: 0.4; text-transform: uppercase; }
+        .synth-knobs { display: flex; gap: 1.5rem; justify-content: center; margin-top: 2rem; }
+        .knob { width: 44px; height: 44px; border: 2px solid rgba(0,255,204,0.2); border-radius: 50%; position: relative; animation: knobSpin 8s linear infinite; }
+        .knob:nth-child(2) { animation-duration: 12s; border-color: rgba(255,0,128,0.2); }
+        .knob:nth-child(3) { animation-duration: 6s; }
+        .knob::after { content: ''; position: absolute; top: 4px; left: 50%; transform: translateX(-50%); width: 2px; height: 8px; background: var(--primary); border-radius: 1px; }
+        .knob:nth-child(2)::after { background: var(--accent); }
+        @keyframes knobSpin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        .platform-tags { display: flex; gap: 0.5rem; margin-top: 1.5rem; justify-content: center; }
+        .platform-tag { padding: 0.3rem 0.75rem; background: rgba(0,255,204,0.08); border: 1px solid rgba(0,255,204,0.2); font-size: 0.7rem; letter-spacing: 0.1em; text-transform: uppercase; color: var(--primary); }
+        .philosophy { padding: 6rem 3rem; border-top: 1px solid var(--border); background: var(--surface); content-visibility: auto; contain-intrinsic-size: 0 520px; }
+        .philosophy-inner { max-width: 1440px; margin: 0 auto; display: grid; grid-template-columns: 1fr 2fr; gap: 6rem; align-items: start; }
+        .philosophy-label { font-family: 'Michroma', sans-serif; font-size: 0.7rem; letter-spacing: 0.4em; color: var(--text-dim); text-transform: uppercase; margin-bottom: 1rem; }
+        .philosophy-heading { font-family: 'Michroma', sans-serif; font-size: clamp(1.5rem, 3vw, 2.2rem); letter-spacing: 0.05em; color: var(--primary); line-height: 1.3; }
+        .philosophy-content { display: grid; grid-template-columns: 1fr 1fr; gap: 3rem; }
+        .philosophy-block-title { font-family: 'Michroma', sans-serif; font-size: 0.75rem; letter-spacing: 0.2em; text-transform: uppercase; color: var(--primary); margin-bottom: 1rem; padding-bottom: 0.75rem; border-bottom: 1px solid var(--border); }
+        .philosophy-block p { font-size: 1rem; color: var(--text-dim); line-height: 1.9; }
+
+        footer { padding: 2.5rem 3rem; border-top: 1px solid var(--border); }
+        .footer-content { max-width: 1440px; margin: 0 auto; display: flex; justify-content: space-between; align-items: center; }
+        .footer-logo { font-family: 'Michroma', sans-serif; font-size: 0.9rem; letter-spacing: 0.2em; color: var(--text-dim); }
+        .footer-links { display: flex; gap: 2rem; }
+        .footer-links a { color: var(--text-dim); text-decoration: none; font-size: 0.8rem; letter-spacing: 0.08em; text-transform: uppercase; transition: color 0.3s; }
+        .footer-links a:hover { color: var(--primary); }
+        .footer-copy { font-size: 0.75rem; color: #404040; letter-spacing: 0.05em; }
+
+        .menu-toggle { display: none; }
+
+        /* Desktop: reduce backdrop-filter cost — blur(12px) is visually identical at distance
+           but samples a 2.8× smaller kernel, reducing compositor work on wide viewports    */
+        @media (min-width: 769px) {
+            header { backdrop-filter: blur(12px); }
+        }
+
+        @media (max-width: 960px) {
+            .product-showcase { grid-template-columns: 1fr; gap: 3rem; }
+            .philosophy-inner { grid-template-columns: 1fr; gap: 3rem; }
+            .philosophy-content { grid-template-columns: 1fr; gap: 2rem; }
+        }
+        @media (max-width: 768px) {
+            header { padding: 0.5rem 1rem; }
+            .logo-img { height: 28px; width: 28px; }
+            .logo-text { font-size: 0.9rem; }
+
+            /* Hero mobile */
+            .hero {
+                min-height: unset;
+                /* push content up from very bottom so scene objects are visible above text */
+                align-items: flex-end;
+            }
+            .hero::after {
+                /* heavier top fade hides empty 3D sky; heavy bottom fade lifts text block */
+                background:
+                    linear-gradient(to bottom, rgba(0,0,0,0.75) 0%, rgba(0,0,0,0.3) 18%, transparent 36%),
+                    linear-gradient(to top,    rgba(0,0,0,0.97) 0%, rgba(0,0,0,0.7) 30%, rgba(0,0,0,0.15) 58%, transparent 75%),
+                    linear-gradient(to right,  rgba(0,0,0,0.3) 0%, transparent 80%);
+            }
+            .hero-content {
+                padding: 0 1.25rem calc(env(safe-area-inset-bottom, 0px) + 4.5rem);
+                max-width: 100%;
+                text-align: left;
+                align-items: flex-start;
+            }
+            .hero-rule { width: 32px; margin-bottom: 0.85rem; }
+            .hero-eyebrow { display: block; font-size: 0.6rem; letter-spacing: 0.25em; margin-bottom: 0.75rem; }
+            .hero h1 {
+                font-size: clamp(1.9rem, 8.5vw, 3rem);
+                line-height: 1.08;
+            }
+            .hero-subtitle {
+                font-size: 0.68rem;
+                letter-spacing: 0.12em;
+                margin: 0.9rem 0 1.4rem;
+                border-left: 2px solid rgba(0,255,204,0.35);
+                padding-left: 0.75rem;
+            }
+            /* Stack buttons full-width vertically — much clearer on mobile */
+            .hero-actions { flex-direction: column; gap: 0.6rem; width: 100%; justify-content: flex-start; }
+            .btn-primary {
+                width: 100%; text-align: center;
+                padding: 1rem 1.25rem;
+                font-size: 0.72rem;
+                clip-path: polygon(0 0, calc(100% - 8px) 0, 100% 8px, 100% 100%, 8px 100%, 0 calc(100% - 8px));
+            }
+            .btn-secondary {
+                width: 100%; text-align: center;
+                padding: 0.9rem 1.25rem;
+                font-size: 0.72rem;
+            }
+
+            .featured-product { padding: 5rem 1.5rem; }
+            .philosophy { padding: 4rem 1.5rem; }
+            footer { padding: 2rem 1.5rem; }
+            .footer-content { flex-direction: column; gap: 1.5rem; text-align: center; }
+            .footer-links { flex-wrap: wrap; justify-content: center; }
+            .product-features-grid { grid-template-columns: 1fr; }
+            nav {
+                position: fixed; top: 0; right: -100%; width: 200px; height: 100vh;
+                background: rgba(0,0,0,0.98); border-left: 1px solid var(--border);
+                flex-direction: column; justify-content: flex-start;
+                padding: 4rem 1.25rem 2rem; gap: 1.25rem;
+                transition: right 0.3s; z-index: 1001;
+            }
+            nav.active { right: 0; }
+            .menu-toggle {
+                display: flex; flex-direction: column; gap: 4px;
+                cursor: pointer; z-index: 1002; padding: 0.35rem;
+                background: none; border: none;
+            }
+            .menu-toggle span { width: 18px; height: 1.5px; background: var(--primary); transition: all 0.3s; display: block; }
+            .menu-toggle.active span:nth-child(1) { transform: rotate(45deg) translate(5px,5px); }
+            .menu-toggle.active span:nth-child(2) { opacity: 0; }
+            .menu-toggle.active span:nth-child(3) { transform: rotate(-45deg) translate(5px,-5px); }
+        }
+        @media (max-width: 420px) {
+            .hero h1 { font-size: clamp(1.65rem, 9.5vw, 2.2rem); }
+            .hero-eyebrow { display: none; }
+            .hero-subtitle { letter-spacing: 0.08em; font-size: 0.63rem; margin: 0.75rem 0 1.1rem; }
+            /* Extra bottom padding on very small screens for home-bar clearance */
+            .hero-content { padding-bottom: calc(env(safe-area-inset-bottom, 0px) + 3.5rem); }
+            .btn-primary, .btn-secondary { padding: 0.95rem 1rem; font-size: 0.65rem; }
+        }
+    </style>
+<script type="importmap">
+{"imports":{
+  "three":"https://cdn.jsdelivr.net/npm/three@0.161.0/build/three.module.js",
+  "three/addons/":"https://cdn.jsdelivr.net/npm/three@0.161.0/examples/jsm/"
+}}
+</script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js"></script>
+</head>
+<body>
+
+<header>
+    <div class="header-content">
+        <a href="index.html" class="logo">
+           <picture>
+    <source srcset="logo.svg" type="image/svg+xml">
+    <img src="logo.png" class="logo-img" alt="Cynic Games">
+</picture>
+            <span class="logo-text">CYNIC GAMES</span>
+        </a>
+        <nav id="nav">
+            <a href="index.html" class="active">Home</a>
+            <a href="products/flux-garden.html" class="nav-cta">Flux Garden</a>
+            <a href="products/flux-canvas.html" class="nav-cta">Flux Canvas</a>
+            <a href="interactive.html">Interactive</a>
+            <a href="about.html">About</a>
+        </nav>
+        <button class="menu-toggle" id="menuToggle" aria-label="Menu"><span></span><span></span><span></span></button>
+    </div>
+</header>
+
+<main id="app">
+    <section class="hero">
+        <canvas id="three-canvas"></canvas>
+        <div class="hero-content">
+            <div class="hero-rule"></div>
+            <div class="hero-eyebrow">Cynic Games · Audio Systems Division</div>
+            <h1>
+                <span class="word-accent">Precision</span><br>
+                <span class="word-dim">Audio</span><br>
+                Systems
+            </h1>
+            <p class="hero-subtitle">VST3 &nbsp;·&nbsp; AU &nbsp;·&nbsp; Standalone &nbsp;·&nbsp; Professional</p>
+            <div class="hero-actions">
+                <a href="products/flux-garden.html" class="btn-primary">Explore Flux Garden</a>
+                <a href="about.html" class="btn-secondary">About Us</a>
+            </div>
+        </div>
+    </section>
+
+    <section class="featured-product">
+        <div class="product-showcase">
+            <div class="product-info">
+                <div class="section-label">Flagship Product</div>
+                <div class="product-name">FLUX GARDEN</div>
+                <div class="product-type">Polyphonic Synthesizer</div>
+                <p class="product-desc">An advanced polyphonic synthesis engine built for serious sound designers. Flux Garden delivers exceptional modulation depth, precise voice architecture, and cross-platform compatibility without compromise.</p>
+                <div class="product-features-grid">
+                    <div class="product-feature"><div class="feature-icon">◈</div><div class="feature-text"><strong>Polyphonic Engine</strong>Full voice architecture with unison and voice stacking</div></div>
+                    <div class="product-feature"><div class="feature-icon">◎</div><div class="feature-text"><strong>Deep Modulation</strong>Matrix-based mod routing with LFOs and envelopes</div></div>
+                    <div class="product-feature"><div class="feature-icon">◇</div><div class="feature-text"><strong>Effects Engine</strong>Built-in reverb, delay, chorus, and distortion chains</div></div>
+                    <div class="product-feature"><div class="feature-icon">◉</div><div class="feature-text"><strong>Cross-Platform</strong>VST3, AU, and Standalone — PC, Mac, Linux</div></div>
+                </div>
+                <div class="product-actions">
+                    <a href="products/flux-garden.html" class="btn-primary">Learn More</a>
+                    <a href="products/flux-garden.html#buy" class="btn-secondary">Buy Now</a>
+                </div>
+            </div>
+            <div class="product-visual">
+                <div class="synth-display">
+                    <div class="synth-placeholder">
+                        <div class="synth-placeholder-title">FLUX GARDEN</div>
+                        <div class="synth-placeholder-sub">UI Preview Coming Soon</div>
+                        <div class="synth-knobs"><div class="knob"></div><div class="knob"></div><div class="knob"></div></div>
+                        <div class="platform-tags"><span class="platform-tag">VST3</span><span class="platform-tag">AU</span><span class="platform-tag">Standalone</span></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="featured-product" style="border-top:1px solid #1a1a1a;">
+        <div class="product-showcase">
+            <div class="product-info">
+                <div class="section-label">Coming July 2026</div>
+                <div class="product-name">FLUX CANVAS</div>
+                <div class="product-type">MIDI-Controllable Audio-Visual Instrument</div>
+                <p class="product-desc">A MIDI-controllable audio-visual performance instrument built for artists, performers, and creators who demand more from their stage. Drive advanced real-time 3D visuals directly from any MIDI controller, shape every parameter to your workflow.</p>
+                <div class="product-features-grid">
+                    <div class="product-feature"><div class="feature-icon">◈</div><div class="feature-text"><strong>3D Render Engine</strong>Real-time 3D graphics with particles, lighting, and post-processing</div></div>
+                    <div class="product-feature"><div class="feature-icon">◎</div><div class="feature-text"><strong>MIDI Mapping</strong>Full learn mode — map any CC, note, or expression to any visual parameter</div></div>
+                    <div class="product-feature"><div class="feature-icon">◇</div><div class="feature-text"><strong>Modular &amp; Moddable</strong>Open architecture — load, create, and share custom visual modules</div></div>
+                    <div class="product-feature"><div class="feature-icon">◉</div><div class="feature-text"><strong>Cross-Platform</strong>Standalone on Windows, macOS, and Linux — no DAW required</div></div>
+                </div>
+                <div class="product-actions">
+                    <a href="products/flux-canvas.html" class="btn-primary">Learn More</a>
+                    <a href="products/flux-canvas.html#notify" class="btn-secondary">Get Notified</a>
+                </div>
+            </div>
+            <div class="product-visual">
+                <div class="synth-display">
+                    <div class="synth-placeholder">
+                        <div class="synth-placeholder-title">FLUX CANVAS</div>
+                        <div class="synth-placeholder-sub">Preview Coming July 2026</div>
+                        <div class="synth-knobs"><div class="knob"></div><div class="knob"></div><div class="knob"></div></div>
+                        <div class="platform-tags"><span class="platform-tag">Windows</span><span class="platform-tag">macOS</span><span class="platform-tag">Linux</span><span class="platform-tag">Standalone</span></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="philosophy">
+        <div class="philosophy-inner">
+            <div>
+                <div class="philosophy-label">Design Principles</div>
+                <div class="philosophy-heading">Built on<br>Engineered<br>Precision</div>
+            </div>
+            <div class="philosophy-content">
+                <div class="philosophy-block"><div class="philosophy-block-title">Real-Time Processing</div><p>Every component is designed with latency constraints in mind. Our DSP pipeline prioritizes deterministic performance across all supported formats and host environments.</p></div>
+                <div class="philosophy-block"><div class="philosophy-block-title">Audio Architecture</div><p>Synthesis engines built from first principles — not presets. We model the signal path before writing a single line of interface code.</p></div>
+                <div class="philosophy-block"><div class="philosophy-block-title">Cross-Platform Design</div><p>Native performance on Windows, macOS, and Linux. No compromises in feature parity between platforms. One codebase, one standard.</p></div>
+                <div class="philosophy-block"><div class="philosophy-block-title">Sound First</div><p>Interface is secondary to sonic character. Tools should feel invisible — the only thing that matters is what comes out of the speakers.</p></div>
+            </div>
+        </div>
+    </section>
+</main>
+
+<footer>
+    <div class="footer-content">
+        <div class="footer-logo">CYNIC GAMES</div>
+        <div class="footer-links"><a href="about.html">About</a><a href="interactive.html">Interactive</a><a href="products/flux-garden.html">Flux Garden</a><a href="products/flux-canvas.html">Flux Canvas</a></div>
+        <div class="footer-copy">© 2026 Cynic Games. All rights reserved.</div>
+    </div>
+</footer>
+
+<script>
+var menuToggle = document.getElementById('menuToggle');
+var nav = document.getElementById('nav');
+if (menuToggle && nav) {
+    menuToggle.addEventListener('click', function() {
+        this.classList.toggle('active');
+        nav.classList.toggle('active');
+    });
+    nav.querySelectorAll('a').forEach(function(link) {
+        link.addEventListener('click', function() {
+            menuToggle.classList.remove('active');
+            nav.classList.remove('active');
+        });
+    });
+}
+</script>
+
+<script>
+(function() {
+    var app = document.getElementById('app');
+    var pageStyles = document.getElementById('page-styles');
+    if (!app || !pageStyles) return;
+    var origin = location.origin;
+    var isIndexPath = function(p) { return !p || p === '/' || p.endsWith('/') || p.endsWith('/index.html'); };
+    var cachedIndex = { main: app.innerHTML, styles: pageStyles.innerHTML };
+
+    function setNavActive(path) {
+        var isHome = !path || path === '/' || path.endsWith('/') || path.endsWith('index.html');
+        nav.querySelectorAll('a').forEach(function(a) {
+            var href = (a.getAttribute('href') || '').replace(/^\//, '');
+            var isHomeLink = !href || href === 'index.html' || href === '';
+            var isAboutLink = href === 'about.html';
+            var isFluxGardenLink = href.indexOf('flux-garden') !== -1;
+            var isFluxCanvasLink = href.indexOf('flux-canvas') !== -1;
+            var isInteractiveLink = href === 'interactive.html' || href.indexOf('interactive') !== -1;
+            a.classList.toggle('active',
+                (isHome && isHomeLink) || (!isHome && path.indexOf('about') !== -1 && isAboutLink) || (!isHome && path.indexOf('flux-garden') !== -1 && isFluxGardenLink) || (!isHome && path.indexOf('flux-canvas') !== -1 && isFluxCanvasLink) || (!isHome && path.indexOf('interactive') !== -1 && isInteractiveLink));
+        });
+    }
+    function fixRelativeLinks() {
+        var root = origin + '/';
+        nav.querySelectorAll('a').forEach(function(a) {
+            var href = a.getAttribute('href');
+            if (href && href.indexOf('#') !== 0 && href.indexOf('http') !== 0) a.setAttribute('href', new URL(href, root).pathname);
+        });
+        document.querySelectorAll('.footer-links a').forEach(function(a) {
+            var href = a.getAttribute('href');
+            if (href && href.indexOf('#') !== 0 && href.indexOf('http') !== 0) a.setAttribute('href', new URL(href, root).pathname);
+        });
+    }
+    function loadPage(url, push) {
+        var fullUrl = new URL(url, location.href).href;
+        if (fullUrl.indexOf('mailto:') === 0 || fullUrl.indexOf('tel:') === 0 || fullUrl.indexOf('#') === 0) return;
+        if (new URL(fullUrl).origin !== origin) return;
+        var targetPath = new URL(fullUrl).pathname;
+        if (isIndexPath(targetPath)) {
+            if (window._visualizerStop) window._visualizerStop();
+            // Stop and remove bg-canvas from about/flux-garden pages
+            if (window._bgAnimId) { cancelAnimationFrame(window._bgAnimId); window._bgAnimId = null; }
+            var bgC = document.getElementById('bg-canvas');
+            if (bgC) bgC.remove();
+            app.innerHTML = cachedIndex.main;
+            pageStyles.innerHTML = cachedIndex.styles;
+            document.title = 'CYNIC GAMES — Precision Audio Systems';
+            if (push) history.pushState({ url: fullUrl }, '', fullUrl);
+            fixRelativeLinks();
+            setNavActive(targetPath);
+            window.scrollTo(0, 0);
+            if (window._visualizerStart) window._visualizerStart();
+            return;
+        }
+        var hash = new URL(fullUrl).hash;
+        fetch(fullUrl, { headers: { 'X-Requested-With': 'XMLHttpRequest' } })
+            .then(function(r) { return r.text(); })
+            .then(function(html) {
+                var parser = new DOMParser();
+                var doc = parser.parseFromString(html, 'text/html');
+                var newMain = doc.querySelector('main');
+                var newStyles = doc.querySelectorAll('head style');
+                if (!newMain) return;
+                if (window._visualizerStop) window._visualizerStop();
+                // Stop and remove any previous bg-canvas (from a prior SPA navigation)
+                if (window._bgAnimId) { cancelAnimationFrame(window._bgAnimId); window._bgAnimId = null; }
+                var oldBgCanvas = document.getElementById('bg-canvas');
+                if (oldBgCanvas) oldBgCanvas.remove();
+                app.innerHTML = newMain.innerHTML;
+                pageStyles.innerHTML = Array.prototype.map.call(newStyles, function(s) { return s.innerHTML; }).join('\n');
+                document.title = doc.querySelector('title') ? doc.querySelector('title').textContent : document.title;
+                if (push) history.pushState({ url: fullUrl }, '', fullUrl);
+                fixRelativeLinks();
+                setNavActive(targetPath);
+                // Inject the bg-canvas element that lives outside <main> in sub-pages
+                var fetchedBgCanvas = doc.getElementById('bg-canvas');
+                if (fetchedBgCanvas) {
+                    var bgCanvas = fetchedBgCanvas.cloneNode(true);
+                    document.body.insertBefore(bgCanvas, document.body.firstChild);
+                }
+                // Re-execute the type="module" visualizer script from the fetched page.
+                // innerHTML does not run scripts, so we create a blob-URL script element.
+                var moduleScripts = doc.body.querySelectorAll('script[type="module"]');
+                moduleScripts.forEach(function(s) {
+                    var blob = new Blob([s.textContent], { type: 'text/javascript' });
+                    var blobURL = URL.createObjectURL(blob);
+                    var sc = document.createElement('script');
+                    sc.type = 'module';
+                    sc.src = blobURL;
+                    document.body.appendChild(sc);
+                    sc.addEventListener('load', function() { URL.revokeObjectURL(blobURL); });
+                });
+                if (hash && document.getElementById(hash.slice(1))) {
+                    document.getElementById(hash.slice(1)).scrollIntoView({ behavior: 'smooth' });
+                } else {
+                    window.scrollTo(0, 0);
+                }
+            })
+            .catch(function() { location.href = fullUrl; });
+    }
+    document.addEventListener('click', function(e) {
+        var a = e.target.closest('a[href]');
+        if (!a || a.target === '_blank' || a.hasAttribute('download')) return;
+        var href = a.getAttribute('href');
+        if (!href || href.indexOf('#') === 0) return;
+        var fullUrl = new URL(href, location.href).href;
+        if (new URL(fullUrl).origin !== origin) return;
+        var path = new URL(fullUrl).pathname;
+        var ext = path.split('.').pop();
+        if (ext && ['html', 'htm', ''].indexOf(ext.toLowerCase()) === -1) return;
+        e.preventDefault();
+        loadPage(fullUrl, true);
+    });
+    window.addEventListener('popstate', function(e) {
+        loadPage(location.href, false);
+    });
+})();
+</script>
+
+
+<script type="module">
+/* ═══════════════════════════════════════════════════════════════════════════
+   CYNIC GAMES — State-of-the-Art WebGL Hero Scene
+   Three.js r161 + EffectComposer + Custom GLSL Shaders
+═══════════════════════════════════════════════════════════════════════════ */
+import * as THREE from 'three';
+import { EffectComposer }   from 'three/addons/postprocessing/EffectComposer.js';
+import { RenderPass }       from 'three/addons/postprocessing/RenderPass.js';
+import { UnrealBloomPass }  from 'three/addons/postprocessing/UnrealBloomPass.js';
+import { AfterimagePass }   from 'three/addons/postprocessing/AfterimagePass.js';
+import { SMAAPass }         from 'three/addons/postprocessing/SMAAPass.js';
+import { ShaderPass }       from 'three/addons/postprocessing/ShaderPass.js';
+
+/* ── Device detection ────────────────────────────────────────────────── */
+// UA + viewport guard prevents Windows touch-screen desktops being mis-classified
+const IS_MOBILE = /Mobi|Android|iPhone|iPad|iPod/i.test(navigator.userAgent) ||
+                  (navigator.maxTouchPoints > 1 && window.innerWidth < 1024);
+
+// ── Desktop quality tier ──────────────────────────────────────────────────
+// Desktop matches mobile visuals exactly — same particle counts, geometry detail, and bloom radius
+const P_MAIN    = 1800;
+const P_RING    = 400;
+const ICO_DETAIL = 12;
+const BLOOM_RAD  = 0.3;
+
+/* ══════════════════════════════════════════════════════════════════════════
+   GLSL LIBRARY — Simplex 3D Noise + 4-octave FBM
+══════════════════════════════════════════════════════════════════════════ */
+const GLSL_NOISE = /* glsl */`
+vec3 mod289(vec3 x){return x-floor(x*(1./289.))*289.;}
+vec4 mod289(vec4 x){return x-floor(x*(1./289.))*289.;}
+vec4 permute(vec4 x){return mod289(((x*34.)+10.)*x);}
+vec4 taylorInvSqrt(vec4 r){return 1.79284291400159-0.85373472095314*r;}
+float snoise(vec3 v){
+  const vec2 C=vec2(1./6.,1./3.);
+  const vec4 D=vec4(0.,.5,1.,2.);
+  vec3 i=floor(v+dot(v,C.yyy));
+  vec3 x0=v-i+dot(i,C.xxx);
+  vec3 g=step(x0.yzx,x0.xyz);
+  vec3 l=1.-g;
+  vec3 i1=min(g.xyz,l.zxy);
+  vec3 i2=max(g.xyz,l.zxy);
+  vec3 x1=x0-i1+C.xxx;
+  vec3 x2=x0-i2+C.yyy;
+  vec3 x3=x0-D.yyy;
+  i=mod289(i);
+  vec4 p=permute(permute(permute(
+    i.z+vec4(0.,i1.z,i2.z,1.))
+    +i.y+vec4(0.,i1.y,i2.y,1.))
+    +i.x+vec4(0.,i1.x,i2.x,1.));
+  float n_=.142857142857;
+  vec3 ns=n_*D.wyz-D.xzx;
+  vec4 j=p-49.*floor(p*ns.z*ns.z);
+  vec4 x_=floor(j*ns.z);
+  vec4 y_=floor(j-7.*x_);
+  vec4 x=x_*ns.x+ns.yyyy;
+  vec4 y=y_*ns.x+ns.yyyy;
+  vec4 h=1.-abs(x)-abs(y);
+  vec4 b0=vec4(x.xy,y.xy);
+  vec4 b1=vec4(x.zw,y.zw);
+  vec4 s0=floor(b0)*2.+1.;
+  vec4 s1=floor(b1)*2.+1.;
+  vec4 sh=-step(h,vec4(0.));
+  vec4 a0=b0.xzyw+s0.xzyw*sh.xxyy;
+  vec4 a1=b1.xzyw+s1.xzyw*sh.zzww;
+  vec3 p0=vec3(a0.xy,h.x);
+  vec3 p1=vec3(a0.zw,h.y);
+  vec3 p2=vec3(a1.xy,h.z);
+  vec3 p3=vec3(a1.zw,h.w);
+  vec4 norm=taylorInvSqrt(vec4(dot(p0,p0),dot(p1,p1),dot(p2,p2),dot(p3,p3)));
+  p0*=norm.x;p1*=norm.y;p2*=norm.z;p3*=norm.w;
+  vec4 m=max(.6-vec4(dot(x0,x0),dot(x1,x1),dot(x2,x2),dot(x3,x3)),0.);
+  m=m*m;
+  return 42.*dot(m*m,vec4(dot(p0,x0),dot(p1,x1),dot(p2,x2),dot(p3,x3)));
+}
+float fbm(vec3 p){
+  float v=0.;float a=.5;float f=1.;
+  for(int i=0;i<4;i++){
+    v+=snoise(p*f)*a;
+    f*=2.1;a*=.48;
+    p=p*1.3+vec3(1.7,9.2,3.4)*float(i+1);
+  }
+  return v;
+}`;
+
+/* ══════════════════════════════════════════════════════════════════════════
+   ICOSAHEDRON SHADERS — Custom PBR + FBM Displacement + Iridescence
+══════════════════════════════════════════════════════════════════════════ */
+const ICO_VERT = /* glsl */`
+${GLSL_NOISE}
+uniform float uTime;
+uniform float uBass;
+uniform float uMid;
+uniform float uHigh;
+varying vec3 vNormal;
+varying vec3 vWorldPos;
+varying float vFresnel;
+
+void main(){
+  vec3 pos=position;
+  vec3 n=normalize(normal);
+  // FBM structural displacement
+  float noiseV=fbm(pos*0.55+uTime*0.12);
+  // Bass: explosive radial pulse
+  float bassSpike=uBass*2.4;
+  // Mid: rolling sine wave ripple across surface
+  float midRipple=uMid*0.5*sin(dot(n,vec3(cos(uTime*1.3),sin(uTime*0.9),cos(uTime*0.7)))*7.+uTime*2.5);
+  // High: fine-grain shimmer
+  float highShim=uHigh*0.2*snoise(pos*9.+uTime*5.);
+  float disp=noiseV*0.4+bassSpike+midRipple+highShim;
+  pos+=n*disp;
+  // World-space normal (uniform scale only)
+  vNormal=normalize(mat3(modelMatrix)*n);
+  vWorldPos=(modelMatrix*vec4(pos,1.)).xyz;
+  vec4 mvPos=modelViewMatrix*vec4(pos,1.);
+  // Fresnel precomputed from view-space normal
+  vec3 viewN=normalize(normalMatrix*n);
+  vFresnel=pow(1.-clamp(dot(viewN,vec3(0.,0.,1.)),0.,1.),3.);
+  gl_Position=projectionMatrix*mvPos;
+}`;
+
+const ICO_FRAG = /* glsl */`
+uniform float uTime;
+uniform float uBass;
+uniform float uMid;
+uniform float uHigh;
+uniform vec3  uCamPos;
+varying vec3 vNormal;
+varying vec3 vWorldPos;
+varying float vFresnel;
+
+const vec3 cCyan=vec3(0.,1.,.8);
+const vec3 cMagenta=vec3(1.,0.,.502);
+
+float ggx(vec3 N,vec3 H,float r){
+  float a=r*r;float a2=a*a;
+  float d=dot(N,H);d=d*d*(a2-1.)+1.;
+  return a2/(3.14159*d*d+1e-5);
+}
+
+void main(){
+  vec3 N=normalize(vNormal);
+  vec3 V=normalize(uCamPos-vWorldPos);
+  float NdV=max(dot(N,V),0.);
+  float fresnel=vFresnel;
+
+  // Base color: blend cyan and magenta by bass + Fresnel angle
+  float t=clamp(uBass*2.+fresnel*.7,0.,1.);
+  vec3 base=mix(cCyan,cMagenta,t);
+
+  // Iridescence — rainbow sheen based on NdotV + time
+  vec3 irisCol=vec3(
+    .5+.5*sin(NdV*6.28+uTime*.7+0.),
+    .5+.5*sin(NdV*6.28+uTime*.7+2.094),
+    .5+.5*sin(NdV*6.28+uTime*.7+4.189));
+  base=mix(base,irisCol,.2+uMid*.3);
+
+  // 3 point lights + rim (all in world space)
+  vec3 L1=normalize(vec3(-5.,8.,6.));   // cyan key
+  vec3 L2=normalize(vec3(8.,3.,-5.));   // magenta fill
+  vec3 L3=normalize(vec3(0.,-4.,8.));   // white fill
+  vec3 Lr=normalize(vec3(0.,2.,-6.));   // cyan rim
+  float d1=max(dot(N,L1),0.);
+  float d2=max(dot(N,L2),0.);
+  float d3=max(dot(N,L3),0.);
+  float dr=max(dot(N,Lr),0.);
+
+  float rough=.1+uMid*.15;
+  float sp1=ggx(N,normalize(V+L1),rough);
+  float sp2=ggx(N,normalize(V+L2),rough);
+
+  vec3 light=
+    cCyan   *(d1*(1.1+uBass*2.0)+sp1*(0.9+uBass*2.0))+
+    cMagenta*(d2*(0.8+uMid*1.4)+sp2*(0.6+uMid*0.9))+
+    vec3(.9)*d3*.18+
+    cCyan   *dr*.28*(1.+uMid*.5);
+
+  // Fresnel emission — drives bloom
+  vec3 emit=mix(cCyan,cMagenta,uBass)*fresnel*(0.8+uBass*2.0);
+
+  // Subsurface scatter approximation
+  float sss=pow(clamp(1.-NdV+.2,0.,1.),2.)*.4;
+  vec3 sssCol=cCyan*sss*(1.+uBass*1.8);
+
+  vec3 col=base*light+emit+sssCol;
+  // Subtle HDR boost to seed bloom without blowing out
+  col+=emit*.12*(1.+uBass*.6);
+  gl_FragColor=vec4(col,.93);
+}`;
+
+/* ══════════════════════════════════════════════════════════════════════════
+   PARTICLE SHADERS — Orbiting + Beat Explode
+══════════════════════════════════════════════════════════════════════════ */
+const PARTICLE_VERT = /* glsl */`
+attribute float aPhase;
+attribute float aOrbR;
+attribute float aSize;
+attribute vec3  aColor;
+uniform float uTime;
+uniform float uMid;
+uniform float uBass;
+uniform float uBeat;
+varying vec3 vColor;
+varying float vAlpha;
+
+void main(){
+  float speed=.7+uMid*2.2;
+  float angle=aPhase+uTime*speed;
+  float r=aOrbR*(1.+uBeat*smoothstep(.6,0.,uBeat)*1.8);
+  vec3 pos=vec3(
+    cos(angle)*r,
+    position.y+sin(aPhase*3.+uTime*.38)*(0.25+uMid*.7),
+    sin(angle)*r);
+  // Beat explosion — radial outward spring
+  pos+=normalize(pos+vec3(0.001))*uBeat*2.8*(aPhase/6.28);
+  vColor=aColor*(1.+uBass*1.2);
+  vAlpha=.45+uMid*.5;
+  vec4 mv=modelViewMatrix*vec4(pos,1.);
+  gl_PointSize=aSize*(1.+uBass*2.2)*(280./-mv.z);
+  gl_Position=projectionMatrix*mv;
+}`;
+
+const PARTICLE_FRAG = /* glsl */`
+varying vec3 vColor;
+varying float vAlpha;
+void main(){
+  vec2 uv=gl_PointCoord-.5;
+  float d=length(uv);
+  float circle=1.-smoothstep(.3,.5,d);
+  float glow=exp(-d*d*9.)*.7;
+  vec3 col=vColor*(circle+glow);
+  float a=circle*vAlpha;
+  if(a<.008) discard;
+  gl_FragColor=vec4(col,a);
+}`;
+
+/* ══════════════════════════════════════════════════════════════════════════
+   BACKGROUND NEBULA — Fullscreen Quad, Domain-Warped FBM + Stars
+══════════════════════════════════════════════════════════════════════════ */
+const BG_VERT = /* glsl */`
+varying vec2 vUv;
+void main(){ vUv=uv; gl_Position=vec4(position.xy,1.,1.); }`;
+
+const BG_FRAG = /* glsl */`
+${GLSL_NOISE}
+uniform float uTime;
+uniform float uBass;
+uniform float uHigh;
+varying vec2 vUv;
+float hash(vec2 p){return fract(sin(dot(p,vec2(127.1,311.7)))*43758.5453);}
+
+void main(){
+  vec2 uv=vUv;
+  uv.x*=1.6;
+  // 2-level domain-warped FBM — drops the 3rd warp level (saves ~4 simplex octaves per pixel)
+  vec3 q=vec3(uv,uTime*.014);
+  float f1=fbm(q);
+  float f2=fbm(q+vec3(f1*.85,f1*.7,uTime*.018));
+  // Nebula color layers — cyan + magenta on near-black
+  vec3 col=vec3(0.);
+  col+=vec3(0.,1.,.8) *smoothstep(-.15,.55,f2)*.20;
+  col+=vec3(1.,0.,.5) *smoothstep(.05,.8,f2)*.16;
+  col+=vec3(.45,0.,1.)*smoothstep(.15,.9,f1*f2)*.10;
+  col+=vec3(0.,.5,1.) *smoothstep(.3,1.,f2*f2)*.08;
+  // Radial bass-pulse from center
+  float r=length(uv-vec2(.8,.5));
+  col+=vec3(0.,1.,.8)*exp(-r*r*2.2)*uBass*1.4;
+  col+=vec3(1.,0.,.5)*exp(-r*r*4.0)*uBass*.6;
+  // Stars with twinkling — 2 density layers (was 4; halves star loop cost per pixel)
+  for(int i=0;i<2;i++){
+    float sc=float(i+1)*1.5;
+    vec2 id=floor(uv*vec2(38.,26.)*sc);
+    vec2 gv=fract(uv*vec2(38.,26.)*sc)-.5;
+    float h=hash(id+float(i)*137.4);
+    if(h>.80){
+      float bri=exp(-dot(gv,gv)*260.*(1.+h*.6));
+      float tw=.45+.35*sin(uTime*(1.8+h*3.5)+h*6.28);
+      bri*=tw*(1.+uHigh*(step(.93,h)*.5));
+      col+=vec3(bri*.65,bri*.72,bri*.68)*bri*.38;
+    }
+  }
+  col=clamp(col*0.88,0.,0.76);
+  gl_FragColor=vec4(col,1.);
+}`;
+
+/* ══════════════════════════════════════════════════════════════════════════
+   GRID FLOOR — Perspective fade + concentric ripple
+══════════════════════════════════════════════════════════════════════════ */
+const GRID_VERT = /* glsl */`
+uniform float uTime;
+uniform float uBass;
+varying vec2 vGUv;
+void main(){
+  vec3 pos=position;
+  float dist=length(pos.xz);
+  float ripple=sin(dist*.75-uTime*8.)*exp(-dist*.14)*uBass*1.3;
+  pos.y+=ripple;
+  vGUv=pos.xz;
+  gl_Position=projectionMatrix*modelViewMatrix*vec4(pos,1.);
+}`;
+
+const GRID_FRAG = /* glsl */`
+uniform float uTime;
+uniform float uBass;
+varying vec2 vGUv;
+void main(){
+  vec2 g=fract(vGUv*.5);
+  float lx=smoothstep(.025,0.,abs(g.x-.5));
+  float ly=smoothstep(.025,0.,abs(g.y-.5));
+  float line=max(lx,ly);
+  float dist=length(vGUv);
+  float fade=1.-smoothstep(7.,22.,dist);
+  float ripple=sin(dist*.75-uTime*8.)*exp(-dist*.14)*uBass;
+  float pLine=line*(1.+ripple*3.5);
+  vec3 col=vec3(0.,1.,.8)*pLine*fade;
+  float a=pLine*fade*.65;
+  if(a<.004) discard;
+  gl_FragColor=vec4(col,a);
+}`;
+
+/* ══════════════════════════════════════════════════════════════════════════
+   TORUS KNOT SHADERS — Animated wireframe-dash look
+══════════════════════════════════════════════════════════════════════════ */
+const TK_VERT = /* glsl */`
+varying vec2 vUv;
+varying vec3 vPos;
+void main(){
+  vUv=uv; vPos=position;
+  gl_Position=projectionMatrix*modelViewMatrix*vec4(position,1.);
+}`;
+
+const TK_FRAG = /* glsl */`
+uniform float uTime;
+uniform float uBass;
+varying vec2 vUv;
+varying vec3 vPos;
+const vec3 cCyan=vec3(0.,1.,.8);
+const vec3 cMagenta=vec3(1.,0.,.502);
+void main(){
+  // Animated dash along uv.x
+  float dash=fract(vUv.x*14.-uTime*1.4);
+  if(dash>.42) discard;
+  float t=fract(vUv.x*3.5+uTime*.25);
+  vec3 col=mix(cCyan,cMagenta,t)*(1.8+uBass*3.);
+  gl_FragColor=vec4(col,.9);
+}`;
+
+/* ══════════════════════════════════════════════════════════════════════════
+   CHROMATIC ABERRATION PASS
+══════════════════════════════════════════════════════════════════════════ */
+const CHROM_AB_SHADER = {
+  uniforms:{ tDiffuse:{value:null}, uStrength:{value:0.002} },
+  vertexShader:/* glsl */`
+    varying vec2 vUv;
+    void main(){vUv=uv;gl_Position=projectionMatrix*modelViewMatrix*vec4(position,1.);}`,
+  fragmentShader:/* glsl */`
+    uniform sampler2D tDiffuse;
+    uniform float uStrength;
+    varying vec2 vUv;
+    void main(){
+      vec2 off=vec2(uStrength,0.);
+      float r=texture2D(tDiffuse,vUv+off).r;
+      float g=texture2D(tDiffuse,vUv).g;
+      float b=texture2D(tDiffuse,vUv-off).b;
+      gl_FragColor=vec4(r,g,b,1.);
+    }`
+};
+
+/* ══════════════════════════════════════════════════════════════════════════
+   SCENE-LEVEL STATE
+══════════════════════════════════════════════════════════════════════════ */
+let renderer, scene, camera, composer;
+let bloomPass, afterimagePass, chromABPass, smaaPassRef;
+let icosahedron, icoMat;
+let particlesMeshA, particlesMeshB;
+let waveRingL, waveRingR, waveGeoL, waveGeoR;
+let torusKnotMesh, tkMat;
+let gridMesh, gridMat;
+let bgMesh;
+let frameId = null;
+let clock = new THREE.Clock();
+let sB=0,sM=0,sH=0,sA=0, beatPulse=0, prevBass=0;
+
+/* ══════════════════════════════════════════════════════════════════════════
+   SCENE INITIALIZATION
+══════════════════════════════════════════════════════════════════════════ */
+function initScene(){
+  const canvas = document.getElementById('three-canvas');
+  if(!canvas) return;
+  const hero = canvas.parentElement;
+
+  /* ── Renderer ── */
+  renderer = new THREE.WebGLRenderer({
+    canvas, antialias:false,
+    powerPreference:'high-performance',
+    alpha:false, stencil:false
+  });
+  renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+  renderer.toneMapping = THREE.ACESFilmicToneMapping;
+  renderer.toneMappingExposure = 0.82;
+  renderer.outputColorSpace = THREE.SRGBColorSpace;
+
+  /* ── Scene & Camera ── */
+  scene  = new THREE.Scene();
+  camera = new THREE.PerspectiveCamera(58,1,.1,200);
+  camera.position.set(0,2,9);
+  camera.lookAt(0,0,0);
+
+  /* ── Helpers ── */
+  const getSize = ()=>{
+    const w=hero.clientWidth||window.innerWidth;
+    const h=hero.clientHeight||window.innerHeight;
+    return {w,h};
+  };
+
+  /* ── Post-processing ── */
+  const {w,h} = getSize();
+  renderer.setSize(w,h,false);
+  camera.aspect=w/h;
+  camera.updateProjectionMatrix();
+  const dpr=renderer.getPixelRatio();
+
+  composer = new EffectComposer(renderer);
+  composer.addPass(new RenderPass(scene,camera));
+
+  bloomPass = new UnrealBloomPass(new THREE.Vector2(w,h),0.50,BLOOM_RAD,.46);
+  composer.addPass(bloomPass);
+
+  if(!IS_MOBILE){
+    afterimagePass = new AfterimagePass(.72);
+    composer.addPass(afterimagePass);
+  }
+
+  smaaPassRef = new SMAAPass(w*dpr,h*dpr);
+  composer.addPass(smaaPassRef);
+
+  chromABPass = new ShaderPass(CHROM_AB_SHADER);
+  chromABPass.renderToScreen=true;
+  composer.addPass(chromABPass);
+
+  /* ── Resize handler ── */
+  function onResize(){
+    if(!renderer) return;
+    const {w,h}=getSize();
+    renderer.setSize(w,h,false);
+    camera.aspect=w/h;
+    camera.updateProjectionMatrix();
+    composer.setSize(w,h);
+    const dpr=renderer.getPixelRatio();
+    if(smaaPassRef) smaaPassRef.setSize(w*dpr,h*dpr);
+    if(bloomPass) bloomPass.resolution.set(w,h);
+  }
+  window.addEventListener('resize',onResize);
+
+  /* ══════════════════════════════════════════════════════════
+     1. BACKGROUND NEBULA — fullscreen quad (renders first)
+  ══════════════════════════════════════════════════════════ */
+  bgMesh = new THREE.Mesh(
+    new THREE.PlaneGeometry(2,2),
+    new THREE.ShaderMaterial({
+      vertexShader:BG_VERT, fragmentShader:BG_FRAG,
+      uniforms:{ uTime:{value:0}, uBass:{value:0}, uHigh:{value:0} },
+      depthTest:false, depthWrite:false
+    })
+  );
+  bgMesh.renderOrder=-100;
+  bgMesh.frustumCulled=false;
+  scene.add(bgMesh);
+
+  /* ══════════════════════════════════════════════════════════
+     2. GRID FLOOR
+  ══════════════════════════════════════════════════════════ */
+  gridMat = new THREE.ShaderMaterial({
+    vertexShader:GRID_VERT, fragmentShader:GRID_FRAG,
+    uniforms:{ uTime:{value:0}, uBass:{value:0} },
+    transparent:true, depthWrite:false, side:THREE.FrontSide
+  });
+  gridMesh = new THREE.Mesh(new THREE.PlaneGeometry(40,40,60,60), gridMat);
+  gridMesh.rotation.x=-Math.PI/2;
+  gridMesh.position.y=-3.5;
+  scene.add(gridMesh);
+
+  /* ══════════════════════════════════════════════════════════
+     3. CENTRAL ICOSAHEDRON — high-poly with FBM displacement
+  ══════════════════════════════════════════════════════════ */
+  icoMat = new THREE.ShaderMaterial({
+    vertexShader:ICO_VERT, fragmentShader:ICO_FRAG,
+    uniforms:{
+      uTime:{value:0}, uBass:{value:0}, uMid:{value:0}, uHigh:{value:0},
+      uCamPos:{value:new THREE.Vector3()}
+    },
+    transparent:true, side:THREE.DoubleSide
+  });
+  icosahedron = new THREE.Mesh(new THREE.IcosahedronGeometry(2.2,ICO_DETAIL), icoMat);
+  scene.add(icosahedron);
+
+  /* ══════════════════════════════════════════════════════════
+     4. PARTICLES — 8000 orbiting + 2000 outer ring
+  ══════════════════════════════════════════════════════════ */
+  function buildParticles(count, baseR){
+    const pos=new Float32Array(count*3);
+    const phase=new Float32Array(count);
+    const orbR=new Float32Array(count);
+    const sizes=new Float32Array(count);
+    const cols=new Float32Array(count*3);
+    const cA=new THREE.Color(0x00ffcc), cB=new THREE.Color(0xff0080);
+    for(let i=0;i<count;i++){
+      const theta=Math.random()*Math.PI*2;
+      const phi=Math.acos(2*Math.random()-1);
+      const r=baseR+Math.random()*1.4;
+      pos[i*3]   =r*Math.sin(phi)*Math.cos(theta);
+      pos[i*3+1] =r*Math.cos(phi)*0.38;
+      pos[i*3+2] =r*Math.sin(phi)*Math.sin(theta);
+      phase[i]=Math.random()*Math.PI*2;
+      orbR[i]=baseR+Math.random()*1.6;
+      sizes[i]=1.8+Math.random()*3.2;
+      const t=i/count;
+      const c=t<.5?cA.clone().lerp(cB,t*2):cB.clone().lerp(cA,(t-.5)*2);
+      cols[i*3]=c.r; cols[i*3+1]=c.g; cols[i*3+2]=c.b;
+    }
+    const geo=new THREE.BufferGeometry();
+    geo.setAttribute('position', new THREE.BufferAttribute(pos,3));
+    geo.setAttribute('aPhase',   new THREE.BufferAttribute(phase,1));
+    geo.setAttribute('aOrbR',    new THREE.BufferAttribute(orbR,1));
+    geo.setAttribute('aSize',    new THREE.BufferAttribute(sizes,1));
+    geo.setAttribute('aColor',   new THREE.BufferAttribute(cols,3));
+    const mat=new THREE.ShaderMaterial({
+      vertexShader:PARTICLE_VERT, fragmentShader:PARTICLE_FRAG,
+      uniforms:{uTime:{value:0},uMid:{value:0},uBass:{value:0},uBeat:{value:0}},
+      transparent:true, depthWrite:false, blending:THREE.AdditiveBlending
+    });
+    return new THREE.Points(geo,mat);
+  }
+  particlesMeshA = buildParticles(P_MAIN, 3.4);
+  particlesMeshB = buildParticles(P_RING, 5.6);
+  scene.add(particlesMeshA);
+  scene.add(particlesMeshB);
+
+  /* ══════════════════════════════════════════════════════════
+     5. WAVEFORM RINGS — L/R channels, LineLoop 512 segs
+  ══════════════════════════════════════════════════════════ */
+  const WSEGS=512;
+  function buildRing(radius,color){
+    const pts=[];
+    for(let i=0;i<=WSEGS;i++){
+      const a=(i/WSEGS)*Math.PI*2;
+      pts.push(new THREE.Vector3(Math.cos(a)*radius,0,Math.sin(a)*radius));
+    }
+    const geo=new THREE.BufferGeometry().setFromPoints(pts);
+    const mat=new THREE.LineBasicMaterial({
+      color, transparent:true, opacity:.95,
+      depthWrite:false, blending:THREE.AdditiveBlending
+    });
+    return {mesh:new THREE.LineLoop(geo,mat),geo};
+  }
+  const rL=buildRing(3.6,0x00ffcc); waveRingL=rL.mesh; waveGeoL=rL.geo;
+  const rR=buildRing(3.1,0xff0080); waveRingR=rR.mesh; waveGeoR=rR.geo;
+  scene.add(waveRingL); scene.add(waveRingR);
+
+  /* ══════════════════════════════════════════════════════════
+     6. TORUS KNOT — floating logo above center
+  ══════════════════════════════════════════════════════════ */
+  tkMat = new THREE.ShaderMaterial({
+    vertexShader:TK_VERT, fragmentShader:TK_FRAG,
+    uniforms:{uTime:{value:0},uBass:{value:0}},
+    transparent:true, side:THREE.FrontSide, wireframe:true
+  });
+  torusKnotMesh = new THREE.Mesh(
+    new THREE.TorusKnotGeometry(.7,.18,200,20,3,7), tkMat
+  );
+  torusKnotMesh.position.y=3.8;
+  scene.add(torusKnotMesh);
+}
+
+/* ══════════════════════════════════════════════════════════════════════════
+   WAVEFORM RING UPDATE
+══════════════════════════════════════════════════════════════════════════ */
+function updateWaveRing(geo,radius,ch){
+  if(!geo||!ch) return;
+  const arr=geo.attributes.position.array;
+  const len=ch.length;
+  const N=Math.floor(arr.length/3)-1;
+  for(let i=0;i<=N;i++){
+    const a=(i/N)*Math.PI*2;
+    const s=(ch[Math.floor(i*len/N)]/128.0)-1.0;
+    const r=radius+s*.65;
+    arr[i*3]=Math.cos(a)*r; arr[i*3+1]=0; arr[i*3+2]=Math.sin(a)*r;
+  }
+  geo.attributes.position.needsUpdate=true;
+}
+
+/* ══════════════════════════════════════════════════════════════════════════
+   ANIMATION LOOP
+══════════════════════════════════════════════════════════════════════════ */
+function animate(){
+  frameId=requestAnimationFrame(animate);
+  const delta=clock.getDelta();
+  const elapsed=clock.getElapsedTime();
+  const freq=window.getFreq?.()??{bass:0,mid:0,high:0,avg:0};
+  const wave=window.getWave?.();
+
+  // Smooth audio
+  const LR=.18;
+  sB+=(freq.bass-sB)*LR; sM+=(freq.mid-sM)*LR;
+  sH+=(freq.high-sH)*LR; sA+=(freq.avg-sA)*LR;
+  // Beat detection
+  const rise=sB-prevBass; prevBass=sB;
+  if(rise>.04) beatPulse=1.0;
+  beatPulse*=.86;
+  const bass=sB,mid=sM,high=sH,avg=sA;
+
+  /* Background */
+  if(bgMesh){
+    const u=bgMesh.material.uniforms;
+    u.uTime.value=elapsed; u.uBass.value+=(bass-u.uBass.value)*.1; u.uHigh.value=high;
+  }
+
+  /* Grid */
+  if(gridMat){
+    gridMat.uniforms.uTime.value=elapsed;
+    gridMat.uniforms.uBass.value+=(bass-gridMat.uniforms.uBass.value)*.1;
+  }
+
+  /* Icosahedron */
+  if(icosahedron&&icoMat){
+    const u=icoMat.uniforms;
+    u.uTime.value=elapsed;
+    u.uBass.value+=(bass-u.uBass.value)*.15;
+    u.uMid.value +=(mid -u.uMid.value )*.15;
+    u.uHigh.value=high;
+    u.uCamPos.value.copy(camera.position);
+    icosahedron.rotation.x+=delta*(.08+mid*.3);
+    icosahedron.rotation.y+=delta*(.12+bass*.4);
+  }
+
+  /* Particles A — main orbit (clockwise) */
+  if(particlesMeshA){
+    const u=particlesMeshA.material.uniforms;
+    u.uTime.value=elapsed; u.uMid.value=mid; u.uBass.value=bass; u.uBeat.value=beatPulse;
+    particlesMeshA.rotation.y+=delta*.04;
+  }
+  /* Particles B — outer ring (counter-clockwise) */
+  if(particlesMeshB){
+    const u=particlesMeshB.material.uniforms;
+    u.uTime.value=elapsed; u.uMid.value=mid; u.uBass.value=bass; u.uBeat.value=beatPulse;
+    particlesMeshB.rotation.y-=delta*.025;
+  }
+
+  /* Waveform rings */
+  if(wave){ updateWaveRing(waveGeoL,3.6,wave.L); updateWaveRing(waveGeoR,3.1,wave.R); }
+  if(waveRingL) waveRingL.rotation.y+=delta*(.14+mid*.8);
+  if(waveRingR) waveRingR.rotation.y+=delta*(.14+mid*.8);
+
+  /* Torus knot */
+  if(torusKnotMesh&&tkMat){
+    torusKnotMesh.rotation.x+=delta*.22;
+    torusKnotMesh.rotation.y+=delta*.18;
+    torusKnotMesh.rotation.z+=delta*.12;
+    const ts=1.0+beatPulse*.22;
+    torusKnotMesh.scale.setScalar(
+      THREE.MathUtils.lerp(torusKnotMesh.scale.x,ts,.12));
+    tkMat.uniforms.uTime.value=elapsed;
+    tkMat.uniforms.uBass.value=bass;
+  }
+
+  /* Post-processing */
+  if(bloomPass)
+    bloomPass.strength=THREE.MathUtils.lerp(bloomPass.strength,0.45+bass*1.2,.1);
+  if(afterimagePass)
+    afterimagePass.uniforms['damp'].value=.65+beatPulse*.10;
+  if(chromABPass)
+    chromABPass.uniforms.uStrength.value=.002+bass*.015;
+
+  /* Camera drift — subtle parallax */
+  camera.position.x=Math.sin(elapsed*.14)*1.6+bass*.25*Math.cos(elapsed*.4);
+  camera.position.y=2.0+Math.sin(elapsed*.11)*.7+bass*.7;
+  camera.position.z=9.0+Math.sin(elapsed*.07)*1.1-avg*.9;
+  camera.lookAt(0,0,0);
+
+  composer.render(delta);
+}
+
+/* ══════════════════════════════════════════════════════════════════════════
+   GSAP SCROLL TRIGGERS
+══════════════════════════════════════════════════════════════════════════ */
+function initScrollTriggers(){
+  const g=window.gsap;
+  const ST=window.ScrollTrigger;
+  if(!g||!ST) return;
+  g.registerPlugin(ST);
+
+  // Featured product: card flies in + Y rotation on scroll enter
+  g.from('.product-showcase',{
+    scrollTrigger:{trigger:'.featured-product',start:'top 80%',toggleActions:'play none none reset'},
+    duration:1.0, x:70, rotateY:12, opacity:0, ease:'power3.out'
+  });
+
+  // Philosophy blocks: staggered fade-up
+  g.from('.philosophy-block',{
+    scrollTrigger:{trigger:'.philosophy',start:'top 80%',toggleActions:'play none none reset'},
+    duration:.85, y:45, opacity:0, stagger:.14, ease:'power2.out'
+  });
+
+  // Hero parallax: camera pulls back as user scrolls down
+  ST.create({
+    trigger:'body', start:'top top', end:'30% top',
+    onUpdate:(self)=>{
+      if(camera){
+        const p=self.progress;
+        camera.position.z=9.0+p*2.2;
+      }
+    }
+  });
+}
+
+/* ══════════════════════════════════════════════════════════════════════════
+   SPA ROUTER HOOKS
+══════════════════════════════════════════════════════════════════════════ */
+window._visualizerStop=function(){
+  if(frameId!==null){ cancelAnimationFrame(frameId); frameId=null; }
+  if(renderer){ renderer.dispose(); renderer=null; }
+  composer=null; bloomPass=null; afterimagePass=null;
+  chromABPass=null; smaaPassRef=null;
+};
+
+window._visualizerStart=function(){
+  if(frameId!==null) return;
+  clock=new THREE.Clock();
+  sB=sM=sH=sA=0; beatPulse=0; prevBass=0;
+  icosahedron=null; icoMat=null;
+  particlesMeshA=null; particlesMeshB=null;
+  waveRingL=null; waveRingR=null; waveGeoL=null; waveGeoR=null;
+  torusKnotMesh=null; tkMat=null; gridMesh=null; gridMat=null; bgMesh=null;
+  initScene();
+  clock.start();
+  animate();
+  initScrollTriggers();
+};
+
+/* ══════════════════════════════════════════════════════════════════════════
+   BOOT
+══════════════════════════════════════════════════════════════════════════ */
+if(document.getElementById('three-canvas')){
+  initScene();
+  clock.start();
+  animate();
+  // Defer GSAP scroll setup until after DOM is ready
+  if(document.readyState==='loading')
+    document.addEventListener('DOMContentLoaded',initScrollTriggers);
+  else
+    initScrollTriggers();
+}
+</script>
+
+</script>
+</body>
+</html>
+
