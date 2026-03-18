@@ -244,6 +244,12 @@
         }
         .btn-secondary:hover { border-color: var(--primary); color: var(--primary); background: rgba(0,255,204,0.04); }
 
+        /* Live audio VU meter strip — top edge of hero */
+        .hero-vu {
+            position: absolute; top: 0; left: 0; right: 0;
+            height: 3px; z-index: 3; pointer-events: none;
+        }
+
         /* content-visibility skips layout/paint for off-screen sections until scrolled into view */
         .featured-product { padding: 8rem 3rem; max-width: 1440px; margin: 0 auto; content-visibility: auto; contain-intrinsic-size: 0 640px; }
         .section-label {
@@ -316,6 +322,38 @@
         .footer-links a { color: var(--text-dim); text-decoration: none; font-size: 0.8rem; letter-spacing: 0.08em; text-transform: uppercase; transition: color 0.3s; }
         .footer-links a:hover { color: var(--primary); }
         .footer-copy { font-size: 0.75rem; color: #404040; letter-spacing: 0.05em; }
+
+        .audio-control {
+            position: fixed; bottom: 2rem; right: 2rem;
+            width: 60px; height: 60px;
+            background: rgba(10,10,10,0.9);
+            border: 2px solid var(--primary);
+            cursor: pointer; display: flex; align-items: center; justify-content: center;
+            z-index: 1000; transition: all 0.3s;
+            box-shadow: 0 0 15px rgba(0,255,204,0.2);
+            backdrop-filter: blur(10px);
+        }
+        .audio-control:hover { box-shadow: 0 0 35px rgba(0,255,204,0.5); transform: scale(1.1); }
+        .audio-control::before { content: '▶'; color: var(--primary); font-size: 1.3rem; }
+        .audio-control.playing::before { content: '⏸'; }
+        .audio-control:not(.playing) { animation: audioPulse 2s ease-in-out infinite; }
+        @keyframes audioPulse {
+            0%, 100% { box-shadow: 0 0 15px rgba(0,255,204,0.2); transform: scale(1); }
+            50%       { box-shadow: 0 0 40px rgba(0,255,204,0.6); transform: scale(1.05); }
+        }
+        .audio-gate {
+            position: fixed; right: 2rem; bottom: 6.5rem;
+            padding: 0.65rem 1.1rem;
+            background: rgba(10,10,10,0.92);
+            border: 1px solid var(--primary-dim);
+            color: var(--text);
+            font-family: 'Rajdhani', sans-serif; font-weight: 600;
+            letter-spacing: 0.05em; text-transform: uppercase; font-size: 0.75rem;
+            opacity: 0; transform: translateY(10px);
+            pointer-events: none; z-index: 1001;
+            transition: opacity 0.3s, transform 0.3s; cursor: pointer;
+        }
+        .audio-gate.show { opacity: 1; transform: translateY(0); pointer-events: auto; }
 
         .menu-toggle { display: none; }
 
@@ -448,6 +486,7 @@
 <main id="app">
     <section class="hero">
         <canvas id="three-canvas"></canvas>
+        <canvas id="vu-canvas" class="hero-vu"></canvas>
         <div class="hero-content">
             <div class="hero-rule"></div>
             <div class="hero-eyebrow">Cynic Games · Audio Systems Division</div>
@@ -549,6 +588,13 @@
         <div class="footer-copy">© 2026 Cynic Games. All rights reserved.</div>
     </div>
 </footer>
+
+<audio id="bgMusic" loop preload="auto">
+    <source src="audio/background.mp3" type="audio/mpeg">
+    <source src="audio/background.ogg" type="audio/ogg">
+</audio>
+<button class="audio-control" id="audioBtn" title="Toggle music"></button>
+<div class="audio-gate" id="audioGate">▶ Click to enable audio</div>
 
 <script>
 var menuToggle = document.getElementById('menuToggle');
@@ -902,10 +948,11 @@ void main(){
     sin(angle)*r);
   // Beat explosion — radial outward spring
   pos+=normalize(pos+vec3(0.001))*uBeat*2.8*(aPhase/6.28);
-  vColor=aColor*(1.+uBass*1.2);
-  vAlpha=.45+uMid*.5;
+  // No brightness boost — color stays in palette; low alpha prevents additive blowout
+  vColor=aColor;
+  vAlpha=.22+uMid*.18;
   vec4 mv=modelViewMatrix*vec4(pos,1.);
-  gl_PointSize=aSize*(1.+uBass*2.2)*(280./-mv.z);
+  gl_PointSize=aSize*(1.+uBass*.8)*(220./-mv.z);
   gl_Position=projectionMatrix*mv;
 }`;
 
@@ -915,11 +962,11 @@ varying float vAlpha;
 void main(){
   vec2 uv=gl_PointCoord-.5;
   float d=length(uv);
-  float circle=1.-smoothstep(.3,.5,d);
-  float glow=exp(-d*d*9.)*.7;
-  vec3 col=vColor*(circle+glow);
-  float a=circle*vAlpha;
-  if(a<.008) discard;
+  // Pure gaussian disc — color stays tinted, no white glow term
+  float disc=exp(-d*d*14.);
+  vec3 col=vColor*disc;
+  float a=disc*vAlpha;
+  if(a<.006) discard;
   gl_FragColor=vec4(col,a);
 }`;
 
@@ -1070,6 +1117,29 @@ let frameId = null;
 let clock = new THREE.Clock();
 let sB=0,sM=0,sH=0,sA=0, beatPulse=0, prevBass=0;
 
+/* ── VU Canvas ────────────────────────────────────────────────────────── */
+const vuCanvas = document.getElementById('vu-canvas');
+const vCtx = vuCanvas ? vuCanvas.getContext('2d') : null;
+function resizeVU(){
+  if(!vuCanvas) return;
+  vuCanvas.width  = vuCanvas.offsetWidth  || window.innerWidth;
+  vuCanvas.height = vuCanvas.offsetHeight || 3;
+}
+resizeVU();
+function drawVU(avg,bass,mid,high){
+  if(!vCtx||!vuCanvas) return;
+  const w=vuCanvas.width, h=vuCanvas.height;
+  vCtx.clearRect(0,0,w,h);
+  const g=vCtx.createLinearGradient(0,0,w,0);
+  g.addColorStop(0,  'rgba(0,255,204,0)');
+  g.addColorStop(.15,`rgba(0,255,204,${(0.4+bass).toFixed(2)})`);
+  g.addColorStop(.5, `rgba(255,0,128,${(0.5+mid).toFixed(2)})`);
+  g.addColorStop(.85,`rgba(136,68,255,${(0.4+high).toFixed(2)})`);
+  g.addColorStop(1,  'rgba(0,255,204,0)');
+  vCtx.fillStyle=g;
+  vCtx.fillRect(0,0,w*Math.min(1,.15+avg*3.5),h);
+}
+
 /* ══════════════════════════════════════════════════════════════════════════
    SCENE INITIALIZATION
 ══════════════════════════════════════════════════════════════════════════ */
@@ -1138,6 +1208,7 @@ function initScene(){
     const dpr=renderer.getPixelRatio();
     if(smaaPassRef) smaaPassRef.setSize(w*dpr,h*dpr);
     if(bloomPass) bloomPass.resolution.set(w,h);
+    resizeVU();
   }
   window.addEventListener('resize',onResize);
 
@@ -1192,7 +1263,14 @@ function initScene(){
     const orbR=new Float32Array(count);
     const sizes=new Float32Array(count);
     const cols=new Float32Array(count*3);
-    const cA=new THREE.Color(0x00ffcc), cB=new THREE.Color(0xff0080);
+    // Dark base colors — additive blending stacks these up to rich saturated glows,
+    // not washed-out white. Start dark so overlap = color, not clip.
+    const palette=[
+      new THREE.Color(0x003d30), // dark cyan
+      new THREE.Color(0x3d0020), // dark magenta
+      new THREE.Color(0x1a0040), // dark violet
+      new THREE.Color(0x00203d), // dark teal-blue
+    ];
     for(let i=0;i<count;i++){
       const theta=Math.random()*Math.PI*2;
       const phi=Math.acos(2*Math.random()-1);
@@ -1202,9 +1280,8 @@ function initScene(){
       pos[i*3+2] =r*Math.sin(phi)*Math.sin(theta);
       phase[i]=Math.random()*Math.PI*2;
       orbR[i]=baseR+Math.random()*1.6;
-      sizes[i]=1.8+Math.random()*3.2;
-      const t=i/count;
-      const c=t<.5?cA.clone().lerp(cB,t*2):cB.clone().lerp(cA,(t-.5)*2);
+      sizes[i]=1.2+Math.random()*1.8;  // smaller — less overlap per pixel
+      const c=palette[i%palette.length].clone();
       cols[i*3]=c.r; cols[i*3+1]=c.g; cols[i*3+2]=c.b;
     }
     const geo=new THREE.BufferGeometry();
@@ -1297,6 +1374,8 @@ function animate(){
   if(rise>.04) beatPulse=1.0;
   beatPulse*=.86;
   const bass=sB,mid=sM,high=sH,avg=sA;
+
+  drawVU(avg,bass,mid,high);
 
   /* Background */
   if(bgMesh){
@@ -1439,8 +1518,219 @@ if(document.getElementById('three-canvas')){
   else
     initScrollTriggers();
 }
+
+window.addEventListener('resize',()=>{ if(vuCanvas) resizeVU(); });
 </script>
 
+<script>
+(function() {
+var audio = document.getElementById('bgMusic');
+var btn       = document.getElementById('audioBtn');
+var audioGate = document.getElementById('audioGate');
+
+audio.volume = 0.5;
+audio.muted  = true;
+
+var audioCtx = null;
+var analyserL = null, analyserR = null;
+var freqData = null, timeDataL = null, timeDataR = null;
+var bufLen = 0, audioConnected = false;
+var autoAttempted = false, fadeInterval = null;
+
+function fadeAudio(targetVolume, duration) {
+    if (fadeInterval) clearInterval(fadeInterval);
+    var startVolume = audio.volume;
+    var steps = 30, stepTime = duration / steps, currentStep = 0;
+    fadeInterval = setInterval(function() {
+        currentStep++;
+        audio.volume = startVolume + (targetVolume - startVolume) * (currentStep / steps);
+        if (currentStep >= steps) { audio.volume = targetVolume; clearInterval(fadeInterval); fadeInterval = null; }
+    }, stepTime);
+}
+
+function ensureCtx() {
+    if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+}
+
+function setupAnalysers(srcNode) {
+    if (audioConnected) return;
+    audioConnected = true;
+    analyserL = audioCtx.createAnalyser();
+    analyserR = audioCtx.createAnalyser();
+    analyserL.fftSize = 1024;
+    analyserR.fftSize = 1024;
+    analyserL.smoothingTimeConstant = 0.82;
+    analyserR.smoothingTimeConstant = 0.82;
+    bufLen = analyserL.frequencyBinCount;
+    freqData = new Uint8Array(bufLen);
+    timeDataL = new Uint8Array(analyserL.fftSize);
+    timeDataR = new Uint8Array(analyserR.fftSize);
+    try {
+        var sp = audioCtx.createChannelSplitter(2);
+        var mg = audioCtx.createChannelMerger(2);
+        srcNode.connect(sp);
+        sp.connect(analyserL, 0, 0);
+        sp.connect(analyserR, 1, 0);
+        analyserL.connect(mg, 0, 0);
+        analyserR.connect(mg, 0, 1);
+        mg.connect(audioCtx.destination);
+    } catch (e) {
+        srcNode.connect(analyserL);
+        analyserL.connect(audioCtx.destination);
+    }
+}
+
+function connectAudio() {
+    if (audioConnected) return;
+    ensureCtx();
+    try {
+        var src = audioCtx.createMediaElementSource(audio);
+        setupAnalysers(src);
+    } catch (e) {}
+}
+
+function getFreq() {
+    if (!analyserL || !freqData) return { bass:0, mid:0, high:0, avg:0 };
+    analyserL.getByteFrequencyData(freqData);
+    var t = Math.floor(bufLen / 3);
+    var b = 0, m = 0, h = 0;
+    for (var i = 0; i < t; i++) b += freqData[i];
+    for (var i = t; i < t * 2; i++) m += freqData[i];
+    for (var i = t * 2; i < bufLen; i++) h += freqData[i];
+    b = b / t / 255; m = m / t / 255; h = h / (bufLen - t * 2) / 255;
+    return { bass: b, mid: m, high: h, avg: (b + m + h) / 3 };
+}
+
+function getWave() {
+    if (!analyserL) return null;
+    analyserL.getByteTimeDomainData(timeDataL);
+    if (analyserR) analyserR.getByteTimeDomainData(timeDataR);
+    return { L: timeDataL, R: timeDataR || timeDataL };
+}
+
+function persistAudioState() {
+    try {
+        localStorage.setItem('musicPlaying', audio.paused ? 'false' : 'true');
+        localStorage.setItem('musicUnmuted', (!audio.paused && !audio.muted) ? 'true' : 'false');
+        if (!audio.paused && audio.currentTime > 0) localStorage.setItem('musicTime', audio.currentTime.toString());
+    } catch (e) {}
+}
+
+function startPlay() {
+    if (!audio.paused) return;
+    if (audio.readyState < 2) audio.load();
+    connectAudio();
+    audio.muted = false;
+    fadeAudio(0.5, 500);
+    function doPlay() {
+        var p = audio.play();
+        if (p && typeof p.then === 'function') {
+            p.then(function() {
+                audioGate.classList.remove('show');
+                btn.classList.add('playing');
+                localStorage.setItem('musicPlaying', 'true');
+                localStorage.setItem('musicUnmuted', 'true');
+            }).catch(function() { audio.muted = true; audioGate.classList.add('show'); });
+        }
+    }
+    if (audioCtx && audioCtx.state === 'suspended') audioCtx.resume().then(doPlay).catch(doPlay);
+    else doPlay();
+}
+
+function tryAutoplay() {
+    if (autoAttempted) return;
+    var savedTime = parseFloat(localStorage.getItem('musicTime') || '0');
+    if (savedTime > 0) audio.currentTime = savedTime;
+    var wasPlaying = localStorage.getItem('musicPlaying') !== 'false';
+    var wasUnmuted = localStorage.getItem('musicUnmuted') === 'true';
+    var isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) || ('ontouchstart' in window && window.innerWidth <= 1024);
+    if (!wasPlaying || isMobile) {
+        audioGate.classList.add('show');
+        autoAttempted = true;
+        return;
+    }
+    if (audio.readyState < 2) { audio.load(); return; }
+    autoAttempted = true;
+    connectAudio();
+    audio.muted = !wasUnmuted;
+    if (wasUnmuted) fadeAudio(0.5, 400);
+    function doPlay() {
+        var p = audio.play();
+        if (p && typeof p.then === 'function') {
+            p.then(function() {
+                audioGate.classList.remove('show');
+                btn.classList.add('playing');
+                if (wasUnmuted) localStorage.setItem('musicUnmuted', 'true');
+            }).catch(function() { audioGate.classList.add('show'); autoAttempted = false; });
+        }
+    }
+    if (audioCtx && audioCtx.state === 'suspended') audioCtx.resume().then(doPlay).catch(doPlay);
+    else doPlay();
+}
+
+audio.addEventListener('canplay', tryAutoplay);
+audio.addEventListener('loadeddata', tryAutoplay);
+if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', tryAutoplay);
+else tryAutoplay();
+window.addEventListener('pageshow', function(e) { if (e.persisted) { autoAttempted = false; tryAutoplay(); } });
+
+var firstClick = function(ev) {
+    if (ev.target.closest('#audioBtn') || ev.target.closest('#audioGate')) return;
+    startPlay();
+    document.removeEventListener('click', firstClick);
+    document.removeEventListener('touchstart', firstTapTouch);
+};
+document.addEventListener('click', firstClick, { once: true });
+function firstTapTouch(ev) {
+    if (ev.target.closest('#audioBtn') || ev.target.closest('#audioGate')) return;
+    startPlay();
+    document.removeEventListener('click', firstClick);
+    document.removeEventListener('touchstart', firstTapTouch);
+}
+document.addEventListener('touchstart', firstTapTouch, { once: true });
+
+audioGate.addEventListener('click', function(e) { e.stopPropagation(); e.preventDefault(); startPlay(); });
+audioGate.addEventListener('touchend', function(e) { e.preventDefault(); e.stopPropagation(); startPlay(); }, { passive: false });
+
+function onPlayButton(e) {
+    e.preventDefault();
+    e.stopPropagation();
+    connectAudio();
+    if (audioCtx && audioCtx.state === 'suspended') audioCtx.resume();
+    if (audio.paused) startPlay();
+    else {
+        fadeAudio(0, 500);
+        setTimeout(function() {
+            audio.pause();
+            btn.classList.remove('playing');
+            localStorage.setItem('musicPlaying', 'false');
+        }, 500);
+    }
+}
+btn.addEventListener('click', onPlayButton);
+btn.addEventListener('touchend', function(e) { e.preventDefault(); onPlayButton(e); }, { passive: false });
+
+audio.addEventListener('play', function() { btn.classList.add('playing'); localStorage.setItem('musicPlaying', 'true'); if (!audio.muted) localStorage.setItem('musicUnmuted', 'true'); });
+audio.addEventListener('pause', function() { btn.classList.remove('playing'); localStorage.setItem('musicPlaying', 'false'); });
+audio.addEventListener('timeupdate', function() { if (!audio.paused && audio.currentTime > 0) localStorage.setItem('musicTime', audio.currentTime.toString()); });
+
+document.addEventListener('visibilitychange', function() {
+    if (document.visibilityState === 'visible' && !audio.paused && audio.muted === false) {
+        var p = audio.play();
+        if (p && typeof p.then === 'function') p.catch(function() {});
+    }
+});
+
+window.addEventListener('beforeunload', persistAudioState);
+window.addEventListener('pagehide', persistAudioState);
+document.body.addEventListener('click', function(e) { if (e.target.closest('a[href]')) persistAudioState(); });
+
+/* Expose audio data to the Three.js visualizer IIFE */
+window.getFreq  = getFreq;
+window.getWave  = getWave;
+window._getFreqData = function() { return freqData; };
+
+})();
 </script>
 </body>
 </html>
