@@ -1,4 +1,5 @@
 QUASIMODO ENGINE
+
 QUASIMODO is an experimental real-time rendering engine platform focused on modern GPU ray tracing workflows, deterministic performance behavior, and classic mod-driven engine architecture.
 The project originates as a research-oriented fork of Quake II RTX and is developed by Cynic Games, an independent studio exploring graphics engineering, renderer design, and next-generation engine technologies.
 QUASIMODO aims to evolve beyond a simple engine fork into a lightweight rendering platform where developers can fully understand runtime behavior, experiment with modern rendering techniques, and build gameplay systems as dynamically loaded modules.
